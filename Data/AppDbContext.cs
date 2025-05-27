@@ -11,12 +11,17 @@ public class AppDbContext : DbContext
     public DbSet<FileMetadata> Files => Set<FileMetadata>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        // Конфигурация отношений
-        modelBuilder.Entity<FileMetadata>()
-            .HasOne(f => f.User)
-            .WithMany(u => u.Files)
-            .HasForeignKey(f => f.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
-    }
+{
+    modelBuilder.Entity<FileMetadata>()
+        .HasOne(f => f.Parent)
+        .WithMany(f => f.Children)
+        .HasForeignKey(f => f.ParentId)
+        .OnDelete(DeleteBehavior.Cascade);
+
+    modelBuilder.Entity<FileMetadata>()
+        .HasOne(f => f.User)
+        .WithMany(u => u.Files)
+        .HasForeignKey(f => f.UserId)
+        .OnDelete(DeleteBehavior.Cascade);
+}
 }
