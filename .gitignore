@@ -1,0 +1,36 @@
+# Build Folders
+bin/
+obj/
+
+# User secrets
+secrets.json
+
+# Visual Studio config files
+.vs/
+*.suo
+*.user
+*.userprefs
+
+# Rider config files
+.idea/
+
+# Publish output
+publish/
+
+# SQLite database files
+*.db
+*.db-journal
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*~
+*.tmp
+*.temp
+*.bak
+
+# Others
+*.pid
+*.pdb
