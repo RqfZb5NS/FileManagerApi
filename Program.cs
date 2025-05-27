@@ -1,10 +1,12 @@
 using FileManagerApi.Data;
 using FileManagerApi.Services;
-using FileManagerApi.Utilities;
+using FileManagerApi.Middlewares;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,33 +20,57 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
 
 // Кастомные сервисы
-builder.Services.AddScoped<FileService>();
-builder.Services.AddSingleton<PathResolver>(provider => 
-    new PathResolver(builder.Configuration["Storage:RootPath"]!));
-builder.Services.AddSingleton<FileValidationService>();
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // JWT аутентификация
+// Program.cs
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options => 
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
+            ValidateAudience = true,
             ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero,
+
+            ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!)
-            )
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!)),
+
+            NameClaimType = JwtRegisteredClaimNames.UniqueName,
+            RoleClaimType = ClaimTypes.Role
         };
     });
+
+builder.Services.AddCors(options => 
+{
+    options.AddPolicy("FrontendPolicy", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:3000"    // Для локальной разработки
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials(); // Если используются куки/авторизация
+    });
+    });
+
+// Добавьте перед созданием app:
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 
 
 
 var app = builder.Build();
+
+
 
 // Создание хранилища файлов
 var storagePath = Path.Combine(Directory.GetCurrentDirectory(), 
@@ -53,11 +79,15 @@ Directory.CreateDirectory(storagePath);
 
 // Middleware pipeline
 app.UseRouting();
+app.UseCors("FrontendPolicy");
+
+app.UseMiddleware<LoggingMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-//app.MapHub<FileHub>("/filehub");
 
 if (app.Environment.IsDevelopment())
 {

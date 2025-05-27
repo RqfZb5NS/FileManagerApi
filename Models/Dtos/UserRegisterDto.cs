@@ -3,6 +3,6 @@ using System.ComponentModel.DataAnnotations;
 namespace FileManagerApi.Models.Dtos;
 
 public record UserRegisterDto(
-    [Required] string Username,
-    [EmailAddress] string Email,
-    [MinLength(6)] string Password);
+    [Required][MinLength(3)] string Username,
+    [Required][EmailAddress] string Email,
+    [Required][MinLength(8)] string Password);
