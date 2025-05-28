@@ -95,20 +95,6 @@ public interface IFileService
         bool isFolder = false);
 
     /// <summary>
-    /// Сгенерировать публичную ссылку для доступа
-    /// </summary>
-    Task<string> GenerateShareLinkAsync(
-        int userId,
-        Guid targetId,
-        TimeSpan? expiration = null,
-        bool isFolder = false);
-
-    /// <summary>
-    /// Отозвать публичную ссылку
-    /// </summary>
-    Task RevokeShareLinkAsync(int userId, Guid linkId);
-
-    /// <summary>
     /// Переместить файл/папку в другую папку
     /// </summary>
     Task MoveAsync(

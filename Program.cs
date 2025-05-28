@@ -1,5 +1,6 @@
 using FileManagerApi.Data;
 using FileManagerApi.Services;
+using FileManagerApi.Utilities;
 using FileManagerApi.Middlewares;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -21,7 +22,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Кастомные сервисы
 builder.Services.AddScoped<IAuthService, AuthService>();
-
+builder.Services.AddScoped<FileStorageManager>();
 // JWT аутентификация
 // Program.cs
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

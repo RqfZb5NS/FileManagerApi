@@ -153,6 +153,9 @@ namespace FileManagerApi.Utilities
         /// <inheritdoc/>
         public string GenerateFilePath(int userId, Guid folderId, string fileName)
         {
+            if (string.IsNullOrEmpty(fileName))
+                throw new ArgumentException("Имя файла не может быть пустым.", nameof(fileName));
+                
             var extension = Path.GetExtension(fileName);
             var newFileName = $"{Guid.NewGuid()}{extension}";
             // Структура: userId/folderId/новыйфайл.расширение
